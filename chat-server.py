@@ -1,19 +1,9 @@
-# Python program to implement server side of chat room.
 import socket
 import re
 from _thread import *
-import sys
 
-"""The first argument AF_INET is the address domain of the 
-socket. This is used when we have an Internet Domain with 
-any two hosts The second argument is the type of socket. 
-SOCK_STREAM means that data or characters are read in 
-a continuous flow."""
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# checks whether sufficient arguments have been provided 
-
 
 # takes the first argument from command prompt as IP address 
 IP_address = '127.0.0.1'
@@ -21,23 +11,19 @@ IP_address = '127.0.0.1'
 # takes second argument from command prompt as port number 
 Port = 2004
 
-""" 
-binds the server to an entered IP address and at the 
-specified port number. 
-The client must be aware of these parameters 
-"""
 server.bind((IP_address, Port))
 
-""" 
-listens for 100 active connections. This number can be 
-increased as per convenience. 
-"""
+# limiting to 100 connections max.
 server.listen(100)
 
 list_of_clients = []
 
 
-def client_thread(connection, addr):
+def client_thread(connection, addr) -> None:
+    """
+    Function handles the communication with client and runs on single thread per client.
+    :return: None
+    """
     # sends a message to the client whose user object is conn
     print(addr)
     connection.send("Hello, welcome to the chat-server version: 1 \n".encode('utf-8'))
@@ -48,8 +34,6 @@ def client_thread(connection, addr):
         message_to_send = ''
         message = connection.recv(2048)
         if not message:
-            """message may have no content if the connection 
-                           is broken, in this case we remove the connection"""
             print("removing connection before nick")
 
             remove(connection)
@@ -70,68 +54,76 @@ def client_thread(connection, addr):
             communicate_with_client(connection, nick_name)
 
 
-def communicate_with_client(connection, nick_name):
+def communicate_with_client(connection, nick_name) -> None:
+    """
+    Sends the given message to client.
+    :return: None
+    """
     while True:
-        message_to_send = ''
         message = connection.recv(2048)
         if not message:
-            """message may have no content if the connection 
-                       is broken, in this case we remove the connection"""
             print("removing connection after nick")
             remove(connection)
             break
         else:
             client_message = message.decode('utf-8')
             if len(client_message) > 255:
-                connection.send("ERR: {} Message should be less than 255 characters".format(nick_name).encode("utf-8"))
+                connection.send(
+                    "ERR: {} Message should be less than 255 characters\n".format(nick_name).encode("utf-8"))
             else:
-                connection.send("MSG: {} {}".format(nick_name, client_message).encode("utf-8"))
+                connection.send("MSG: {} {}\n".format(nick_name, client_message).encode("utf-8"))
 
 
-"""Using the below function, we broadcast the message to all 
-clients who's object is not the same as the one sending 
-the message """
-
-
-def send_message_to_connection(message, connection):
+def send_message_to_connection(message, connection) -> None:
+    """
+    Sends the given message to the given connection.
+    :return: None
+    """
     for clients in list_of_clients:
         if clients == connection:
             try:
                 connection.send(message)
             except Exception as e:
                 connection.close()
-
-                # if the link is broken, we remove the client
+                # Link might be broken, remove the connection
                 remove(clients)
 
 
-"""The following function simply removes the object 
-from the list that was created at the beginning of  
-the program"""
-
-
-def remove(connection):
+def remove(connection) -> None:
+    """
+    Function to remove the connection from list of connections.
+    :return: None
+    """
     if connection in list_of_clients:
         list_of_clients.remove(connection)
 
 
-while True:
-    """Accepts a connection request and stores two parameters,  
-    conn which is a socket object for that user, and addr  
-    which contains the IP address of the client that just  
-    connected"""
-    conn, addr = server.accept()
+def main() -> None:
+    """
+    Entry point of this module
+    :return: None
+    """
+    while True:
+        """Accepts a connection request and stores two parameters,  
+        conn which is a socket object for that user, and addr  
+        which contains the IP address of the client that just  
+        connected"""
+        conn, addr = server.accept()
 
-    """Maintains a list of clients for ease of broadcasting 
-    a message to all available people in the chatroom"""
-    print("starting appended")
-    list_of_clients.append(conn)
+        """Maintains a list of clients for ease of broadcasting 
+        a message to all available people in the chatroom"""
+        print("starting appended")
+        list_of_clients.append(conn)
 
-    # prints the address of the user that just connected 
-    print(addr[0] + " connected")
+        # prints the address of the user that just connected
+        print(addr[0] + " connected")
 
-    # creates and individual thread for every user  
-    # that connects 
-    start_new_thread(client_thread, (conn, addr))
+        # creates and individual thread for every user
+        # that connects
+        start_new_thread(client_thread, (conn, addr))
 
-server.close()
+    server.close()
+
+
+if __name__ == '__main__':
+    main()
