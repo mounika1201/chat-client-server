@@ -34,11 +34,12 @@ def main() -> None:
         to send a message, then the if condition will hold true 
         below.If the user wants to send a message, the else 
         condition will evaluate as true"""
-        read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])
-        print(client_socket.fileno())
-        # print(client_socket.client_socket())
-        if client_socket.fileno() == -1:
-            break
+        try:
+            read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])
+        except ValueError as e:
+            print("Server communication is down, shutting down client")
+            client_socket.close()
+            sys.exit(1)
         for socks in read_sockets:
             if socks is not None:
                 if socks == client_socket:
