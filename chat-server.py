@@ -1,5 +1,4 @@
-
-# Python program to implement server side of chat room. 
+# Python program to implement server side of chat room.
 import socket
 import re
 from _thread import *
@@ -42,7 +41,8 @@ def client_thread(connection, addr):
     # sends a message to the client whose user object is conn
     print(addr)
     connection.send("Hello, welcome to the chat-server version: 1 \n".encode('utf-8'))
-    connection.send("Usage: Please enter the NICK <nick>, then start sending messages using MSG <text> \n".encode('utf-8'))
+    connection.send(
+        "Usage: Please enter the NICK <nick>, then start sending messages using MSG <text> \n".encode('utf-8'))
 
     while True:
         message_to_send = ''
@@ -70,7 +70,6 @@ def client_thread(connection, addr):
             communicate_with_client(connection, nick_name)
 
 
-
 def communicate_with_client(connection, nick_name):
     while True:
         message_to_send = ''
@@ -84,15 +83,16 @@ def communicate_with_client(connection, nick_name):
         else:
             client_message = message.decode('utf-8')
             if len(client_message) > 255:
-                print("ERR " + client_message)
+                connection.send("ERR: {} Message should be less than 255 characters".format(nick_name).encode("utf-8"))
             else:
-                print("Success")
-
+                connection.send("MSG: {} {}".format(nick_name, client_message).encode("utf-8"))
 
 
 """Using the below function, we broadcast the message to all 
 clients who's object is not the same as the one sending 
 the message """
+
+
 def send_message_to_connection(message, connection):
     for clients in list_of_clients:
         if clients == connection:
@@ -133,6 +133,5 @@ while True:
     # creates and individual thread for every user  
     # that connects 
     start_new_thread(client_thread, (conn, addr))
-
 
 server.close()
