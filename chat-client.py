@@ -47,10 +47,12 @@ def main() -> None:
                     message = socks.recv(2048)
                     if not message:
                         client_socket.close()
-                    log.info("Server Message: " + str(message))
+                    log.info("Server Response: {}\n".format(message.decode("utf-8")))
                 else:
-                    message = input("Please enter the message for server")
+                    message = input()
+                    log.info("Sending message to server.... {}".format(message))
                     client_socket.send(message.encode('utf-8'))
+
     client_socket.close()
 
 

@@ -10,7 +10,7 @@ server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 IP_address = '127.0.0.1'
 
 # takes second argument from command prompt as port number 
-Port = 2004
+Port = 4711
 
 server.bind((IP_address, Port))
 
@@ -26,9 +26,9 @@ def client_thread(connection, addr) -> None:
     :return: None
     """
     # sends a message to the client whose user object is conn
-    connection.send("Hello, welcome to the chat-server version: 1 \n".encode('utf-8'))
+    connection.send("Hello, welcome to the chat-server version: 1".encode('utf-8'))
     connection.send(
-        "Usage: Please enter the NICK <nick>, then start sending messages using MSG <text> \n".encode('utf-8'))
+        "Usage: Please enter the NICK <nick>, then start sending messages using MSG <text>".encode('utf-8'))
 
     while True:
         message_to_send = ''
@@ -74,7 +74,7 @@ def communicate_with_client(connection, nick_name) -> None:
                 if len(client_message) > 255 and re.match("^[^\x00-\x7F]*$", client_message) is None:
                     message_to_send = "ERR: {} Message should be less than 255 characters".format(nick_name)
                 else:
-                    message_to_send = "MSG: {} {}\n".format(nick_name, client_message)
+                    message_to_send = "MSG: {} {}".format(nick_name, client_message)
             else:
                 message_to_send = "ERR: should be in format of MSG <text>"
             connection.send(message_to_send.encode("utf-8"))
