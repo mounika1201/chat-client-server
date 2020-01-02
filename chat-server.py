@@ -6,10 +6,8 @@ from zenlog import log
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-# takes the first argument from command prompt as IP address 
 IP_address = '127.0.0.1'
 
-# takes second argument from command prompt as port number 
 Port = 4711
 
 server.bind((IP_address, Port))
@@ -34,7 +32,7 @@ def client_thread(connection, addr) -> None:
         message_to_send = ''
         message = connection.recv(2048)
         if not message:
-            log.warn("removing connection before nick")
+            log.warn("Removing connection: {}".format(connection))
             remove(connection)
             break
         else:
@@ -64,7 +62,7 @@ def communicate_with_client(connection, nick_name) -> None:
     while True:
         message = connection.recv(2048)
         if not message:
-            log.warn("removing connection after nick")
+            log.warn("no message received from client, connection might be broken")
             remove(connection)
             break
         else:
