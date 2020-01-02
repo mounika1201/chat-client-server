@@ -2,6 +2,7 @@ import socket
 import select
 import sys
 from argparse import ArgumentParser
+from zenlog import log
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -37,26 +38,19 @@ def main() -> None:
         try:
             read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])
         except ValueError as e:
-            print("Server communication is down, shutting down client")
+            log.error("Server communication is down, shutting down client")
             client_socket.close()
             sys.exit(1)
         for socks in read_sockets:
             if socks is not None:
                 if socks == client_socket:
-                    print("client_socket" + str(client_socket))
-                    print("hello")
-                    print(client_socket)
                     message = socks.recv(2048)
                     if not message:
-                        print("break")
                         client_socket.close()
-                    print("Server Message" + str(message))
+                    log.info("Server Message: " + str(message))
                 else:
-                    message = sys.stdin.readline()
+                    message = input("Please enter the message for server")
                     client_socket.send(message.encode('utf-8'))
-                    sys.stdout.write("<You>")
-                    sys.stdout.write(message)
-                    sys.stdout.flush()
     client_socket.close()
 
 

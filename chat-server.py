@@ -1,6 +1,7 @@
 import socket
 import re
 from _thread import *
+from zenlog import log
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -25,7 +26,6 @@ def client_thread(connection, addr) -> None:
     :return: None
     """
     # sends a message to the client whose user object is conn
-    print(addr)
     connection.send("Hello, welcome to the chat-server version: 1 \n".encode('utf-8'))
     connection.send(
         "Usage: Please enter the NICK <nick>, then start sending messages using MSG <text> \n".encode('utf-8'))
@@ -34,23 +34,26 @@ def client_thread(connection, addr) -> None:
         message_to_send = ''
         message = connection.recv(2048)
         if not message:
-            print("removing connection before nick")
+            log.warn("removing connection before nick")
             remove(connection)
             break
         else:
-
+            nick_name = ''
             message_string = message.decode("utf-8")
             if re.search('NICK', message_string, re.IGNORECASE):
                 nick_name = re.search('NICK (.*)', message_string, re.IGNORECASE).group(1)
                 if len(nick_name) <= 12 and re.match("^[A-Za-z0-9\_]+$", nick_name):
                     message_to_send = 'MSG: Welcome ' + nick_name
+                    send_message_to_connection(message_to_send.encode("utf-8"), connection)
+                    communicate_with_client(connection, nick_name)
                 else:
                     message_to_send = 'ERR: Nick name should be less than 12 characters and allowed characters ' \
                                       'are upper case, lower case, number and _. Client sent: ' + nick_name
-
-            send_message_to_connection(message_to_send.encode("utf-8"), connection)
-
-            communicate_with_client(connection, nick_name)
+                    send_message_to_connection(message_to_send.encode("utf-8"), connection)
+            else:
+                message_to_send = 'ERR: Nick name should be less than 12 characters and allowed characters ' \
+                                  'are upper case, lower case, number and _. Client sent: ' + nick_name
+                send_message_to_connection(message_to_send.encode("utf-8"), connection)
 
 
 def communicate_with_client(connection, nick_name) -> None:
@@ -61,7 +64,7 @@ def communicate_with_client(connection, nick_name) -> None:
     while True:
         message = connection.recv(2048)
         if not message:
-            print("removing connection after nick")
+            log.warn("removing connection after nick")
             remove(connection)
             break
         else:
@@ -87,6 +90,7 @@ def send_message_to_connection(message, connection) -> None:
             try:
                 connection.send(message)
             except Exception as e:
+                log.error("Exception occurred while sending message to {}, removing the client".format(connection))
                 connection.close()
                 # Link might be broken, remove the connection
                 remove(clients)
@@ -106,23 +110,17 @@ def main() -> None:
     Entry point of this module
     :return: None
     """
+    log.info("Welcome to the chat server...")
     while True:
-        """Accepts a connection request and stores two parameters,  
-        conn which is a socket object for that user, and addr  
-        which contains the IP address of the client that just  
-        connected"""
         conn, addr = server.accept()
 
-        """Maintains a list of clients for ease of broadcasting 
-        a message to all available people in the chatroom"""
-        print("starting appended")
+        # Maintains a list of clients
         list_of_clients.append(conn)
 
         # prints the address of the user that just connected
-        print(addr[0] + " connected")
+        log.info(addr[0] + " connected")
 
-        # creates and individual thread for every user
-        # that connects
+        # creates and assigns thread for every client
         start_new_thread(client_thread, (conn, addr))
 
     server.close()
