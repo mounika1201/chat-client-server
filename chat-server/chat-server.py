@@ -23,7 +23,6 @@ def client_thread(connection, addr) -> None:
     Function handles the communication with client and runs on single thread per client.
     :return: None
     """
-    # sends a message to the client whose user object is conn
     connection.send("Hello, welcome to the chat-server version: 1".encode('utf-8'))
     connection.send(
         "Usage: Please enter the NICK <nick>, then start sending messages using MSG <text>".encode('utf-8'))
