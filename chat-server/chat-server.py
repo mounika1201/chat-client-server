@@ -28,7 +28,6 @@ def client_thread(connection, addr) -> None:
         "Usage: Please enter the NICK <nick>, then start sending messages using MSG <text>".encode('utf-8'))
 
     while True:
-        message_to_send = ''
         message = connection.recv(2048)
         if not message:
             log.warn("Removing connection: {}".format(connection))
@@ -39,9 +38,10 @@ def client_thread(connection, addr) -> None:
             message_string = message.decode("utf-8")
             if re.search('NICK', message_string, re.IGNORECASE):
                 nick_name = re.search('NICK (.*)', message_string, re.IGNORECASE).group(1)
-                if len(nick_name) <= 12 and re.match("^[A-Za-z0-9\_]+$", nick_name):
+                if 0 < len(nick_name) <= 12 and re.match("^[A-Za-z0-9\_]+$", nick_name):
                     message_to_send = 'MSG: Welcome ' + nick_name
                     send_message_to_connection(message_to_send.encode("utf-8"), connection)
+                    # valid client, so client can communicate further with server
                     communicate_with_client(connection, nick_name)
                 else:
                     message_to_send = 'ERR: Nick name should be less than 12 characters and allowed characters ' \
@@ -68,7 +68,7 @@ def communicate_with_client(connection, nick_name) -> None:
             client_message = message.decode('utf-8')
             if re.search('MSG', client_message, re.IGNORECASE):
                 client_message = re.search('MSG (.*)', client_message, re.IGNORECASE).group(1)
-                if len(client_message) > 255 and re.match("^[^\x00-\x7F]*$", client_message) is None:
+                if 0 < len(client_message) > 255 and re.match("^[^\x00-\x7F]*$", client_message) is None:
                     message_to_send = "ERR: {} Message should be less than 255 characters".format(nick_name)
                 else:
                     message_to_send = "MSG: {} {}".format(nick_name, client_message)

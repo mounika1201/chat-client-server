@@ -1,5 +1,8 @@
-run-python3:
-	python3 chat-server.py
+PYTHON_INTERPRETER=python
+PIP_INTERPRETER=pip
+
+install:
+	$(PYTHON_INTERPRETER) setup.py --pip $(PIP_INTERPRETER)
 
 run:
-	python chat-server.py
+	$(PYTHON_INTERPRETER) chat-server.py

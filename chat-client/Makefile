@@ -1,8 +1,10 @@
 HOST=127.0.0.1
-PORT=2004
+PORT=4711
+PYTHON_INTERPRETER=python
+PIP_INTERPRETER=pip
 
-run-python3:
-	python3 chat-client.py --ip-address $(HOST) --port $(PORT)
+install:
+	$(PYTHON_INTERPRETER) setup.py --pip $(PIP_INTERPRETER)
 
 run:
-	python chat-client.py --ip-address $(HOST) --port $(PORT)
+	$(PYTHON_INTERPRETER) chat-client.py --ip-address $(HOST) --port $(PORT)
