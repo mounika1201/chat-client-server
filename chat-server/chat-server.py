@@ -48,8 +48,7 @@ def client_thread(connection, addr) -> None:
                                       'are upper case, lower case, number and _. Client sent: ' + nick_name
                     send_message_to_connection(message_to_send.encode("utf-8"), connection)
             else:
-                message_to_send = 'ERR: Nick name should be less than 12 characters and allowed characters ' \
-                                  'are upper case, lower case, number and _. Client sent: ' + nick_name
+                message_to_send = 'ERR: Nick name should start with command NICK <text>'
                 send_message_to_connection(message_to_send.encode("utf-8"), connection)
 
 
