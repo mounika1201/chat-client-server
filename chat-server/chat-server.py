@@ -30,13 +30,13 @@ def client_thread(connection, addr) -> None:
     while True:
         message = connection.recv(2048)
         if not message:
-            log.warn("Removing connection: {}".format(connection))
+            log.warn("Connection might be broken, Removing connection: {}...".format(connection))
             remove(connection)
             break
         else:
             nick_name = ''
             message_string = message.decode("utf-8")
-            if re.search('NICK', message_string, re.IGNORECASE):
+            if re.search('NICK (.*)', message_string, re.IGNORECASE):
                 nick_name = re.search('NICK (.*)', message_string, re.IGNORECASE).group(1)
                 if 0 < len(nick_name) <= 12 and re.match("^[A-Za-z0-9\_]+$", nick_name):
                     message_to_send = 'MSG: Welcome ' + nick_name

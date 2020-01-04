@@ -36,7 +36,9 @@ def main() -> None:
                     message = sockets.recv(2048)
                     if not message:
                         client_socket.close()
+                    log.info("-----------------------------------------")
                     log.info("Server Response: {}\n".format(message.decode("utf-8")))
+                    log.info("-----------------------------------------")
                 else:
                     message = input()
                     log.info("Sending message to server.... {}".format(message))
