@@ -2,7 +2,6 @@ import socket
 import select
 import sys
 from argparse import ArgumentParser
-from zenlog import log
 
 def main() -> None:
     """
@@ -27,7 +26,7 @@ def main() -> None:
         try:
             read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])
         except ValueError as e:
-            log.error("Server communication is down, shutting down client")
+            print("Server communication is down, shutting down client")
             client_socket.close()
             sys.exit(1)
         for sockets in read_sockets:
@@ -36,12 +35,12 @@ def main() -> None:
                     message = sockets.recv(2048)
                     if not message:
                         client_socket.close()
-                    log.info("-----------------------------------------")
-                    log.info("Server Response: {}\n".format(message.decode("utf-8")))
-                    log.info("-----------------------------------------")
+                    print("-----------------------------------------")
+                    print("Server Response: {}\n".format(message.decode("utf-8")))
+                    print("-----------------------------------------")
                 else:
                     message = input()
-                    log.info("Sending message to server.... {}".format(message))
+                    print("Sending message to server.... {}".format(message))
                     client_socket.send(message.encode('utf-8'))
 
     client_socket.close()

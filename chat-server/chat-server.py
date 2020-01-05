@@ -1,7 +1,6 @@
 import socket
 import re
 from _thread import *
-from zenlog import log
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -30,7 +29,7 @@ def client_thread(connection, addr) -> None:
     while True:
         message = connection.recv(2048)
         if not message:
-            log.warn("Connection might be broken, Removing connection: {}...".format(connection))
+            print("Connection might be broken, Removing connection: {}...".format(connection))
             remove(connection)
             break
         else:
@@ -42,6 +41,8 @@ def client_thread(connection, addr) -> None:
                     message_to_send = 'MSG: Welcome ' + nick_name
                     send_message_to_connection(message_to_send.encode("utf-8"), connection)
                     # valid client, so client can communicate further with server
+                    print("{} is registered successfully with server, can start sending messages..."
+                          .format(nick_name))
                     communicate_with_client(connection, nick_name)
                 else:
                     message_to_send = 'ERR: Nick name should be less than 12 characters and allowed characters ' \
@@ -60,7 +61,7 @@ def communicate_with_client(connection, nick_name) -> None:
     while True:
         message = connection.recv(2048)
         if not message:
-            log.warn("no message received from client, connection might be broken")
+            print("no message received from client, connection might be broken")
             remove(connection)
             break
         else:
@@ -86,7 +87,7 @@ def send_message_to_connection(message, connection) -> None:
             try:
                 connection.send(message)
             except Exception as e:
-                log.error("Exception occurred while sending message to {}, removing the client".format(connection))
+                print("Exception occurred while sending message to {}, removing the client".format(connection))
                 connection.close()
                 # Link might be broken, remove the connection
                 remove(clients)
@@ -106,7 +107,7 @@ def main() -> None:
     Entry point of this module
     :return: None
     """
-    log.info("Welcome to the chat server...")
+    print("Welcome to the chat server...")
     while True:
         conn, addr = server.accept()
 
@@ -114,7 +115,7 @@ def main() -> None:
         list_of_clients.append(conn)
 
         # prints the address of the user that just connected
-        log.info(addr[0] + " connected")
+        print(addr[0] + " client connected")
 
         # creates and assigns thread for every client
         start_new_thread(client_thread, (conn, addr))
